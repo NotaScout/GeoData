@@ -59,8 +59,8 @@ term.clear()
 term.setCursorPos(1,1)
 --opens the target file in read only mode
 
-print("Initializing ... ")
---sleep(.1)
+print("Initializing ... \n")
+sleep(.1)
 --file = io.open("/scanner/search_targets.txt","w")
 --file:write("coal")
 --file:close()
@@ -69,28 +69,98 @@ print("Initializing ... ")
 -- IMPORTANT: CHANGE
 -- searchTargets
 -- to searchTerm
-print("Finding Search Targets ...")
---sleep(.1)
-local file, err = fs.open("/scanner/search_targets.txt", 'r')
-if file then -- check to ensure the file opened
-  local searchTargets = file.readAll()
-  print("Searching for:\n" .. searchTargets)
-  file.close() -- always close the file after reading
-    -- do stuff with the data
-else
-  -- the file failed to open, tell the user
-  term.clear()
-  error("File failed to open due to: " .. tostring(err))
+print("Locating Ore Targets ...\n")
+sleep(.1)
+-- Open the file in read mode
+
+local function readSearchTargets()
+    local file, err = fs.open("/scanner/search_targets.txt", 'r')
+    if not file then
+        term.clear()
+        error("File failed to open due to: " .. tostring(err))
+    end
+
+    local searchTargets = {}  -- Table to store search targets
+    print("Ore Targets Found!\n")
+    sleep(0.1)
+    print("Reading Ore Targets ...\n")
+    -- Read each line from the file and store in the table
+    local line = file.readLine()  -- Read the first line
+    while line do
+        table.insert(searchTargets, line)  -- Insert the line into the table
+        line = file.readLine()  -- Read the next line
+    end
+
+    file.close()  -- Close the file after reading
+
+    return searchTargets
+
 end
+
+local function twoColumnCenter(length,objectLength,column)
+    middle = math.ceil(length/2)
+    objectMiddle = math.ceil(string.len(objectLength)/2)
+    
+    if column == 1 then --left
+    centeredVal = math.ceil(middle/2)-objectMiddle
+    else
+    centeredVal = middle+math.ceil(middle/2)-objectMiddle
+    end
+    return centeredVal
+end
+
+
+local searchTargets = readSearchTargets() -- pulls the terms out of our function
+
+--calculate positions of elements
+
+monitorWidth = 25 -- from what I looked up, this is 51 chars
+
+topLeftTableHeader = "Found:"
+
+topRightTableHeader = "Amount:"
+
+H_middle = math.ceil(monitorWidth/2)
+
+topLeftHeaderPos = math.ceil(H_middle/2)-math.ceil(string.len(topLeftTableHeader)/2)
+
+sleep(1)
+
+term.clear()
+
+--print(topLeftHeaderPos)
+
+term.setCursorPos(topLeftHeaderPos,1)
+
+print(topLeftTableHeader)
+
+topRightHeaderPos = H_middle+math.ceil(H_middle/2)-math.ceil(string.len(topRightTableHeader)/2)
+
+term.setCursorPos(topRightHeaderPos,1)
+
+--
+
+print(topRightTableHeader)
+
+
+
 
 
 while true do
 
-    
     data = getChunkdata()
+    --print("Searching for:")
+-- start index loop
+    for index, target in ipairs(searchTargets) do
+-- index is i
+        --print(target)
+    local searchTerm = target
+
+
+    
     if data then
     
-    local searchTerm = "diamond"
+    
     local matches = searchTextInTable(data, searchTerm)
     local netOre = 0
     
@@ -100,9 +170,14 @@ while true do
         netOre = netOre + match.value
     end
     if netOre > 0 then
-        term.setCursorPos(1,1)
-        term.clear()
-        print("Found:", searchTerm, "Amount:", netOre)    
+        center_L = twoColumnCenter(25,searchTerm,1)
+        term.setCursorPos(center_L,index+1) -- using top row for labels
+        term.clearLine()
+        print(searchTerm)
+        center_R = twoColumnCenter(25,netOre,0)
+        term.setCursorPos(center_R,index+1)
+        print(netOre)
     end
     end
+    end -- end index loop
 end
