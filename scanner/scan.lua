@@ -51,28 +51,45 @@ end
 
 -- start of program
 -- waits for keypress to begin
+term.clear()
+term.setCursorPos(1,1)
+print("Press Any Key to Begin")
 local event,startSearch = os.pullEvent("key")
+term.clear()
+term.setCursorPos(1,1)
 --opens the target file in read only mode
 
-file = io.open("/scanner/search_targets.txt","w")
-file:write("coal")
-file:close()
+print("Initializing ... ")
+--sleep(.1)
+--file = io.open("/scanner/search_targets.txt","w")
+--file:write("coal")
+--file:close()
 
+
+-- IMPORTANT: CHANGE
+-- searchTargets
+-- to searchTerm
+print("Finding Search Targets ...")
+--sleep(.1)
 local file, err = fs.open("/scanner/search_targets.txt", 'r')
 if file then -- check to ensure the file opened
-  local data = file.readAll()
+  local searchTargets = file.readAll()
+  print("Searching for:\n" .. searchTargets)
   file.close() -- always close the file after reading
-  -- do stuff with the data
+    -- do stuff with the data
 else
   -- the file failed to open, tell the user
+  term.clear()
   error("File failed to open due to: " .. tostring(err))
 end
+
 
 while true do
 
     
     data = getChunkdata()
     if data then
+    
     local searchTerm = "diamond"
     local matches = searchTextInTable(data, searchTerm)
     local netOre = 0
@@ -84,7 +101,7 @@ while true do
     end
     if netOre > 0 then
         term.setCursorPos(1,1)
-        term.clearLine()
+        term.clear()
         print("Found:", searchTerm, "Amount:", netOre)    
     end
     end
