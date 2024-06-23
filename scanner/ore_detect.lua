@@ -1,5 +1,42 @@
 geo = peripheral.wrap("back")
 
+local function centerTextOnScreen(text, screenWidth, screenHeight)
+    -- Calculate the starting positions to center text horizontally and vertically
+    local textWidth = #text  -- Get the length of the text to be displayed
+    local startX = math.floor((screenWidth - textWidth) / 2) + 1  -- Calculate starting x position
+    local startY = math.floor(screenHeight / 2)  -- Calculate starting y position
+
+    -- Print the text centered on the screen
+    term.setCursorPos(startX, startY)
+    print(text)
+end
+
+-- adjustable height centering
+local function centerTextOnWidthScreen(text, screenWidth,cursorY)
+    -- Calculate the starting positions to center text horizontally and vertically
+    local textWidth = #text  -- Get the length of the text to be displayed
+    local startX = math.floor((screenWidth - textWidth) / 2) + 1  -- Calculate starting x position
+    --local startY = math.floor(screenHeight / 2)  -- Calculate starting y position
+
+    -- Print the text centered on the screen
+    term.setCursorPos(startX, cursorY)
+    print(text)
+end
+
+local function twoColumnCenter(length,objectLength,column)
+    middle = math.ceil(length/2)
+    objectMiddle = math.ceil(string.len(objectLength)/2)
+    
+    if column == 1 then --left
+    centeredVal = math.ceil(middle/2)-objectMiddle
+    else
+    centeredVal = middle+math.ceil(middle/2)-objectMiddle
+    end
+    return centeredVal
+end
+
+
+
 function getOreData(radius)
     
     sleep(1)
@@ -36,20 +73,60 @@ local function readSearchTarget()
         error("File failed to open due to: " .. tostring(err))
     end
 
-    local searchTarget = ""  -- string to store search target
-    print("Target Found!\n")
-    sleep(0.1)
-    print("Reading Target ...\n")
-    -- Read each line (one line) from the file and store in the table
+    -- Read each line from the file
     local searchTarget = file.readLine()  -- Read the first line
-    local searchRadius = file.readLine() -- secondLine
+    local searchRadius = file.readLine()  -- Read the second line
+
     file.close()  -- Close the file after reading
-term.clear()
-term.setCursorPos(1,1)
+
+    term.clear()
+    term.setCursorPos(1, 1)
 
     return searchTarget, searchRadius
-
 end
+
+local function writeSearchTarget(searchTarget)
+    local file, err = fs.open("/scanner/ore_search_targets.txt", 'w')
+    if not file then
+        term.clear()
+        error("File failed to open due to: " .. tostring(err))
+    end
+    file.writeLine(searchTarget)  -- Write searchTarget to the first line
+    --file.writeLine(searchRadius)  -- Write searchRadius to the second line
+
+    file.close()  -- Close the file after writing
+
+    term.clear()
+    term.setCursorPos(1, 1)
+end
+
+local function writeSearchRadius(searchRadius)
+    local file, err = fs.open("/scanner/ore_search_targets.txt", 'r')
+    if not file then
+        term.clear()
+        error("File failed to open due to: " .. tostring(err))
+    end
+	
+    local searchTarget = file.readLine()  -- Read the first line
+    file.close()
+
+
+    local file, err = fs.open("/scanner/ore_search_targets.txt", 'w')
+    if not file then
+        term.clear()
+        error("File failed to open due to: " .. tostring(err))
+    end
+
+    file.writeLine(searchTarget)  -- Write searchTarget to the first line
+    file.writeLine(searchRadius)  -- Write searchRadius to the second line
+
+    file.close()  -- Close the file after writing
+
+    term.clear()
+    term.setCursorPos(1, 1)
+end
+
+
 
 local function searchOreData(data,targetTerm)
 
@@ -119,7 +196,10 @@ searchRadius = 5
 local target = ""
 term.clear()
 term.setCursorPos(1,1)
-print("Press Any Key to Begin")
+
+
+centerTextOnScreen("Press Any Key to Begin",26,20)
+--print("Press Any Key to Begin")
 local event,startSearch = os.pullEvent("key")
 term.clear()
 term.setCursorPos(1,1)
@@ -137,6 +217,8 @@ print("Locating Defaults ...\n")
 sleep(0.56)
 --opens the target file in read only mode (if the user has supplied no input)
 target = readSearchTarget()
+else 
+writeSearchTarget(target)
 end
 
 term.clear()
@@ -159,13 +241,21 @@ print("Locating Defaults ...\n")
 sleep(0.56)
 --opens the target file in read only mode (if the user has supplied no input)
 _,radius = readSearchTarget()
+else
+writeSearchRadius(radius)
 end
 
 
 
 
 --&return contents in variable
-print("Target:\n\n",target)
+centerTextOnWidthScreen("Target",26,2)
+centerTextOnWidthScreen(target,26,4)
+centerTextOnWidthScreen("==<---->==",26,5)
+
+
+local noTargetFound = "No " .. target .. " Found in Range"
+
 --keyword search through table to find matches
 
 
@@ -206,16 +296,49 @@ end
 --retrieve closest match x,y,z
 local x_ore,y_ore,z_ore = searchOreData(scan_result,target)
 if x_ore then
-print(x_ore,y_ore,z_ore)
-EW,UD,NS = getHeadings(x_ore,y_ore,z_ore)
-print(EW,UD,NS)
+--print(x_ore,y_ore,z_ore)
+NS,EW,UD = getHeadings(x_ore,y_ore,z_ore)
+--print(EW,UD,NS)
 --print(detected_target)
+
+--  Headings  Distance
+--    2         2
+--     3        3
+
+colLeft1 = twoColumnCenter(26,string.len(UD),1)
+term.setCursorPos(colLeft1,7)
+term.clearLine()
+print(UD)
+colRight1 = twoColumnCenter(26,string.len(y_ore),0)
+term.setCursorPos(colRight1,7)
+print(math.abs(y_ore))
+
+-- row 2
+
+colLeft2 = twoColumnCenter(26,string.len(EW),1)
+term.setCursorPos(colLeft2,9)
+term.clearLine()
+print(EW)
+colRight2 = twoColumnCenter(26,string.len(x_ore),0)
+term.setCursorPos(colRight2,9)
+print(math.abs(x_ore))
+
+-- row 3
+
+colLeft3 = twoColumnCenter(26,string.len(NS),1)
+term.setCursorPos(colLeft3,11)
+term.clearLine()
+print(NS)
+colRight3 = twoColumnCenter(26,string.len(z_ore),0)
+term.setCursorPos(colRight3,11)
+print(math.abs(z_ore))
+
 
 --get player x,y,z (playerPos = 0,0,0)
 
 --take delta to get directions to match
 else
-print("No",target,"Found in Range")
+centerTextOnScreen(noTargetFound,26,20)
 end
 
 
