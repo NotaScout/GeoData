@@ -53,7 +53,10 @@ end
 -- waits for keypress to begin
 term.clear()
 term.setCursorPos(1,1)
-print("Press Any Key to Begin")
+message = "Press Any Key to Begin"
+cursorStart = 25-math.ceil(string.len(message))
+term.setCursorPos(cursorStart,8)
+print(message)
 local event,startSearch = os.pullEvent("key")
 term.clear()
 term.setCursorPos(1,1)
@@ -66,9 +69,9 @@ sleep(.1)
 --file:close()
 
 
--- IMPORTANT: CHANGE
--- searchTargets
--- to searchTerm
+-- IMPORTANT
+-- searchTargets !=
+-- searchTerm
 print("Locating Ore Targets ...\n")
 sleep(.1)
 -- Open the file in read mode
@@ -84,6 +87,7 @@ local function readSearchTargets()
     print("Ore Targets Found!\n")
     sleep(0.1)
     print("Reading Ore Targets ...\n")
+    sleep(0.2)
     -- Read each line from the file and store in the table
     local line = file.readLine()  -- Read the first line
     while line do

@@ -1,0 +1,6 @@
+coal
+diamond
+iron
+emerald
+lapis
+allthemodium
