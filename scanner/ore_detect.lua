@@ -259,93 +259,72 @@ local noTargetFound = "No " .. target .. " Found in Range"
 --keyword search through table to find matches
 
 
+local function mainLoop()
 
+local running = true  -- Flag to control the loop
 
+    while running do
+        local scan_result = getOreData(searchRadius)
 
-scan_result = getOreData(searchRadius) -- output data will be in table form. Each indice will contain:
- -- {"name",{table_of_tags},x,y,z}
--- tag table will (?) maybe find a use later, but will need to be subindexed
+        if scan_result then
+            -- Process the scan_result
+            local x_ore, y_ore, z_ore = searchOreData(scan_result, target)
 
+            if x_ore then
+                local NS, EW, UD = getHeadings(x_ore, y_ore, z_ore)
+		term.setCursorPos(1,10)
+		term.clearLine()
+                -- Clear screen before printing new results
+                term.setCursorPos(1, 1)
 
---[[ this one contains the table search
+                -- Print results
+                -- row 1
+                local colLeft1 = twoColumnCenter(26, string.len(UD), 1)
+                term.setCursorPos(colLeft1, 7)
+                term.clearLine()
+		if y_ore ~= 0 then
+                print(UD)
+                local colRight1 = twoColumnCenter(26, string.len(math.abs(y_ore)), 0)
+                term.setCursorPos(colRight1, 7)
+                print(math.abs(y_ore))
+		end
 
---print("Full data table:")
-for key_1, value_1 in pairs(scan_result) do
-print(value_1["name"])
-if string.find(value_1["name"],"slab") then -- follows minecraft coord structure
-print("x",value_1["x"])
-print("y",value_1["y"])
-print("z",value_1["z"])
--- then we return the closest one's XYZ then compare with the player's location
--- then give directions to the block
-end
--- We want to index this table with index names, not index numbers
-print(value_1[1])
-print(value_1[2]) 
-print(value_1[3])
-print(value_1[4])
---print("\n")
- for key_2, value_2 in pairs(value_1) do
- --print(key_2,value_2)
- end
- --print("\n")
-end
-]]
---detected_target = searchTextInTable(scan_result,target)
+                -- row 2
+                local colLeft2 = twoColumnCenter(26, string.len(EW), 1)
+                term.setCursorPos(colLeft2, 9)
+                term.clearLine()
+		if x_ore ~= 0 then
+                print(EW)
+                local colRight2 = twoColumnCenter(26, string.len(math.abs(x_ore)), 0)
+                term.setCursorPos(colRight2, 9)
+                print(math.abs(x_ore))
+		end
+                -- row 3
+                local colLeft3 = twoColumnCenter(26, string.len(NS), 1)
+                term.setCursorPos(colLeft3, 11)
+                term.clearLine()
+		if z_ore ~= 0 then
+                print(NS)
+                local colRight3 = twoColumnCenter(26, string.len(math.abs(z_ore)), 0)
+                term.setCursorPos(colRight3, 11)
+                print(math.abs(z_ore))
+		end
 
---retrieve closest match x,y,z
-local x_ore,y_ore,z_ore = searchOreData(scan_result,target)
-if x_ore then
---print(x_ore,y_ore,z_ore)
-NS,EW,UD = getHeadings(x_ore,y_ore,z_ore)
---print(EW,UD,NS)
---print(detected_target)
-
---  Headings  Distance
---    2         2
---     3        3
-
-colLeft1 = twoColumnCenter(26,string.len(UD),1)
-term.setCursorPos(colLeft1,7)
-term.clearLine()
-print(UD)
-colRight1 = twoColumnCenter(26,string.len(y_ore),0)
-term.setCursorPos(colRight1,7)
-print(math.abs(y_ore))
-
--- row 2
-
-colLeft2 = twoColumnCenter(26,string.len(EW),1)
-term.setCursorPos(colLeft2,9)
-term.clearLine()
-print(EW)
-colRight2 = twoColumnCenter(26,string.len(x_ore),0)
-term.setCursorPos(colRight2,9)
-print(math.abs(x_ore))
-
--- row 3
-
-colLeft3 = twoColumnCenter(26,string.len(NS),1)
-term.setCursorPos(colLeft3,11)
-term.clearLine()
-print(NS)
-colRight3 = twoColumnCenter(26,string.len(z_ore),0)
-term.setCursorPos(colRight3,11)
-print(math.abs(z_ore))
-
-
---get player x,y,z (playerPos = 0,0,0)
-
---take delta to get directions to match
-else
-centerTextOnScreen(noTargetFound,26,20)
+                -- Add option for break if you only want to scan once after finding the result
+                -- break
+            else
+		term.clear()
+		centerTextOnWidthScreen("Target",26,2)
+		centerTextOnWidthScreen(target,26,4)
+		centerTextOnWidthScreen("==<---->==",26,5)
+                centerTextOnScreen("No matching target found.", 26, 20)
+            end
+        else
+            -- Optional delay or other handling if scan_result is nil
+            os.sleep(1)  -- Sleep for 1 second before retrying
+        end
+    end
 end
 
 
-
-
-
-
-
-
-
+mainLoop()

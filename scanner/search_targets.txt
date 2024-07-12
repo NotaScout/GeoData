@@ -3,4 +3,5 @@ diamond
 iron
 emerald
 lapis
-allthemodium
+debris
+unobtainium
